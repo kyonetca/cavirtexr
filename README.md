@@ -25,8 +25,7 @@ runApp('webapp', launch.browser=TRUE)
 
 All feedback and suggestions are welcome! 
 
-Peter Taylor
-peter.taylor@taypeinternational.com
+info@taypeinternational.com
 
 
 
