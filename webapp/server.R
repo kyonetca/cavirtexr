@@ -9,30 +9,39 @@ shinyServer(function(input, output, session) {
   
   book <- NA
   
-  vtx.hours <- NA
+  vtx.minutes <- NA
   vtx.days <- NA
+  vtx.weeks <- NA
   vtx.months  <- NA 
   vtx.hours <- NA
   
   # Return the requested dataset
   freqInput <- reactive({
     switch(input$ohlc.frequency,
+           "minutes"=vtx.minutes,
            "hours" = vtx.hours,
            "days" = vtx.days,
+           "weeks" = vtx.weeks,
            "months" = vtx.months)
   })
   
   output$chart <- renderPlot({
     vtx.hours <- get_bitcoincharts_data(symbol='virtexCAD', start.date=as.character(Sys.Date() - years(1)), ohlc.frequency='hours')
-    vtx.days <- to.daily(vtx.hours[ paste(as.character(Sys.Date() - days(30)), '/', sep='') ], name=rep('', 5), drop.time=FALSE)
-    vtx.months  <- to.monthly(vtx.hours, name=rep('', 5))
+    vtx.minutes <- get_bitcoincharts_data(symbol='virtexCAD', start.date=as.character(Sys.Date() - days(1)), ohlc.frequency='minutes')
+    vtx.days <- to.daily(vtx.hours[ paste(as.character(Sys.Date() - days(30)), '/', sep='') ], name=rep('', 5), drop.time=TRUE)
+    vtx.weeks <- to.weekly(vtx.hours[ paste(as.character(Sys.Date() - days(30)), '/', sep='') ], name=rep('', 5), drop.time=TRUE)
+    vtx.months  <- to.monthly(vtx.hours, name=rep('', 5), drop.time=TRUE)
     vtx.hours <- vtx.hours[ paste(as.character(Sys.Date() - days(2)), '/', sep='') ]
+    vtx.minutes <<- vtx.minutes
     vtx.hours <<- vtx.hours
     vtx.days <<- vtx.days
+    vtx.weeks <<- vtx.weeks
     vtx.months <<- vtx.months
     switch(input$ohlc.frequency,
+           "minutes" = chartSeries(vtx.minutes),
            "hours" = chartSeries(vtx.hours),
            "days" = chartSeries(vtx.days),
+           "weeks" = chartSeries(vtx.weeks),
            "months" = chartSeries(vtx.months))
     invalidateLater(millis=((((60 - minute(Sys.time())) + 1) * 60) * 1000), session)
   })
@@ -40,8 +49,10 @@ shinyServer(function(input, output, session) {
   output$ohlc.display <- renderPrint({
     ohlc.frequency <- freqInput()
     switch(input$ohlc.frequency,
+           "miutes" = head(as.data.frame(vtx.minutes)[ order(index(vtx.minutes), decreasing=TRUE), 1:5], 4),
            "hours" = head(as.data.frame(vtx.hours)[ order(index(vtx.hours), decreasing=TRUE), 1:5], 4),
            "days" = head(as.data.frame(vtx.days)[ order(index(vtx.days), decreasing=TRUE), 1:5], 4),
+           "weeks" = head(as.data.frame(vtx.weeks)[ order(index(vtx.weeks), decreasing=TRUE), 1:5], 4),
            "months" = head(as.data.frame(vtx.months)[ order(index(vtx.months), decreasing=TRUE), 1:5], 4))
   })
   

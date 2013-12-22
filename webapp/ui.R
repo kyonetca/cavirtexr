@@ -31,7 +31,7 @@ shinyUI(pageWithSidebar(
     verbatimTextOutput('recent.trades'),
     
     selectInput("ohlc.frequency", "Choose a frequency:", 
-                choices = c("hours", "days", "months")),
+                choices = c("minutes", "hours", "days", "weeks", "months")),
     
     h5('Order Book'),
     
