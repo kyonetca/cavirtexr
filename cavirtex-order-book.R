@@ -3,7 +3,7 @@ library(stringr)
 # ==========================================================================================
 # Calculate the cost to execute a market order
 # ==========================================================================================
-market.order <- function(qty, buy.sell='buy', order.book=cavirtex.get.orderbook()) {
+market.order <- function(qty, buy.sell='buy', order.book=cavirtex.get.orderbook(), fee=0.0) {
   if(buy.sell == 'buy') {
     # how much will it cost to purchase qty of BTC by market order
     order.book$asks$amount.cum <- cumsum(order.book$asks$amount)  

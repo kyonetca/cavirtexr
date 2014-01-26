@@ -90,7 +90,7 @@ shinyServer(function(input, output, session) {
     rownames(res) <- NULL
     colnames(res) <- c('Time', 'Open', 'High', 'Low', 'Close', 'Volume')
     res <- res[ order(as.POSIXct(res[,1]), decreasing=TRUE), ]
-    as.matrix(res[1:7, 1:6])
+    as.matrix(res[1:6, 1:6])
   }, options=list(bFilter=0, bSort=0, bProcessing=0, bPaginate=0, bInfo=0))
   
   output$booksummaryTable <- renderDataTable({
