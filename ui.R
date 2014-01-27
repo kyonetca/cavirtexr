@@ -74,6 +74,7 @@ shinyUI(basicPage(
                         p('')
              ),
              gridsterItem(row=15, col=5, sizex=1, sizey=1, # footer
+                        a(href='https://github.com/br00t999/cavirtexr', 'Open source'),
                         p('2014 TAYPE I B S Inc. All rights reserved.'),
                         tags$style(type="text/css", 'p {font-size:smaller;}')
              )
