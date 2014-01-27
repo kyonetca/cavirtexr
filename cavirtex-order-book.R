@@ -26,6 +26,18 @@ market.order <- function(qty, buy.sell='buy', order.book=cavirtex.get.orderbook(
   }
 }
 
+# # =================================================================================================
+# # get long short profit boundaries for a given market order qty
+# # =================================================================================================
+# get.profit.boundaries <- function(qty, order.book, fee.rate) {
+#   ratio = (1 - fee.rate)^(-2)
+#   short = entry.price / ratio
+#   long = entry.price * ratio
+#   #   message(sprintf('%s <--( %s )--> %s', short, entry_price, long))
+#   #   message(sprintf('spread: %s', (long-entry_price)))
+#   list(short=short, long=long)  
+# }
+
 # ==========================================================================================
 # Generic print method for orderbook class ( used in Shiny app )
 # ==========================================================================================

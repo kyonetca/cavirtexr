@@ -57,10 +57,18 @@ shinyServer(function(input, output, session) {
     if(input$ohlc.frequency == "weeks") data <- vtx.weeks
     if(input$ohlc.frequency == "months") data <- vtx.months
     if(str_detect(input$ohlc.frequency, 'minutes')) freq <- 'minutes' else freq <- input$ohlc.frequency
-    chartSeries(data, theme='white',
-                name = 'virtexCAD',
-                type = input$chart_type,
-                subset = paste("last", input$timeline.slider, freq))
+    ta.str <- ifelse('bb' %in% input$ta_checks, 'addBBands()', '')
+    ta.str <- c(ta.str, ifelse('vo' %in% input$ta_checks, 'addVo()', ''))
+    ta.str <- ta.str[ ta.str != '' ]
+    print(paste(ta.str, collapse=',', sep=''))
+    if(length(ta.str) > 0) chartSeries(data, theme='white', TA=paste(ta.str, collapse=',', sep=''), TAsep=',',
+                                 name = 'virtexCAD',
+                                 type = input$chart_type,
+                                 subset = paste("last", input$timeline.slider, freq))
+    else chartSeries(data, theme='white', TA=NULL,
+                     name = 'virtexCAD',
+                     type = input$chart_type,
+                     subset = paste("last", input$timeline.slider, freq))
   }
   
   output$chart <- renderPlot({
@@ -146,8 +154,18 @@ shinyServer(function(input, output, session) {
     invalidateLater(millis=5000, session)
   })
   
-  output$market.order.sell<- renderPrint({
+  output$market.order.sell <- renderPrint({
     try(cat(market.order(input$btc.qty, 'sell', book, input$fee), '\n'))
     invalidateLater(millis=5000, session)
   })
+  
+#   output$long.profit <- renderPrint({
+#     try(cat(get.profit.boundaries(book, input$fee), '\n'))
+#     invalidateLater(millis=5000, session)
+#   })
+#   
+#   output$short.profit <- renderPrint({
+#     try(cat(get.profit.boundaries(input$btc.qty, book, input$fee), '\n'))
+#     invalidateLater(millis=5000, session)
+#   })
 })
