@@ -56,10 +56,12 @@ plot.orderbook <- function(x, y, ...) {
   plot(y=x$bids$amount, x=x$bids$price, type='h', lwd=12, yaxt='n', ann=FALSE, xlim=c(min(as.numeric(x$bids$price)), max(as.numeric(x$bids$price))), ylim=c(0, max.y), axes=FALSE, col='#00CC00', lend='square', )
   axis(side=1, at=seq(min(as.numeric(x$bids$price)), max(as.numeric(x$bids$price)), ((max(as.numeric(x$bids$price)) - min(as.numeric(x$bids$price))) / 5)), col='black')
   axis(side=2, at=seq(0, max.y, (max.y / 10)), col='black')
+  grid(NA,NULL, lty = 6, col = "grey")
   title('Bids')
   plot(y=x$asks$amount, x=x$asks$price, type='h', lwd=12, yaxt='n', ann=FALSE, xlim=c(min(as.numeric(x$asks$price)), max(as.numeric(x$asks$price))), ylim=c(0, max.y), axes=FALSE, col='#FF7700', lend='square')
   axis(side=1, at=seq(min(as.numeric(x$asks$price)), max(as.numeric(x$asks$price)), ((max(as.numeric(x$asks$price)) - min(as.numeric(x$asks$price))) / 5)), col='black')
   axis(side=4, at=seq(0, max.y, (max.y / 10)), col='black')
+  grid(NA,NULL, lty = 6, col = "grey")
   title('Asks')
 }
 

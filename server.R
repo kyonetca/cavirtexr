@@ -60,7 +60,6 @@ shinyServer(function(input, output, session) {
     ta.str <- ifelse('bb' %in% input$ta_checks, 'addBBands()', '')
     ta.str <- c(ta.str, ifelse('vo' %in% input$ta_checks, 'addVo()', ''))
     ta.str <- ta.str[ ta.str != '' ]
-    print(paste(ta.str, collapse=',', sep=''))
     if(length(ta.str) > 0) chartSeries(data, theme='white', TA=paste(ta.str, collapse=',', sep=''), TAsep=',',
                                  name = 'virtexCAD',
                                  type = input$chart_type,
