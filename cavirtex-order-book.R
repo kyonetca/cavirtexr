@@ -6,15 +6,20 @@ library(stringr)
 market.order <- function(qty, buy.sell='buy', order.book=cavirtex.get.orderbook(), fee=0.0) {
   if(buy.sell == 'buy') {
     # how much will it cost to purchase qty of BTC by market order
+    # when you buy fee is charged in CAD
     order.book$asks$amount.cum <- cumsum(order.book$asks$amount)  
     buy.these <- order.book$asks[ 1:rownames(first(order.book$asks[ order.book$asks$amount.cum >= qty, ])), ]
     cost <- sum(as.numeric(buy.these$value)) - ((last(buy.these$amount.cum) - qty) * last(as.numeric(buy.these$price)))
+    # to compensate for fees, we add on fee to cost
+    cost <- cost * (1 + (fee / 100.0))
     return(cost)
   } else if(buy.sell == 'sell') {
     # how much will you receive to sell qty of BTC by market order
+    # when you sell fee is charged in BTC
     order.book$bids$amount.cum <- cumsum(order.book$bids$amount)  
-    sell.these <- order.book$bids[ 1:rownames(first(order.book$bids[ order.book$bids$amount.cum >= qty, ])), ]
-    revenue <- sum(as.numeric(sell.these$value)) - ((last(sell.these$amount.cum) - qty) * last(as.numeric(sell.these$price)))
+    sell.these <- order.book$bids[ 1:rownames(first(order.book$bids[ order.book$bids$amount.cum >= (qty * (1 - (fee / 100.0))), ])), ]
+    # we adjust the qty by the BTC fee
+    revenue <- sum(as.numeric(sell.these$value)) - ((last(sell.these$amount.cum) - (qty * (1 - (fee / 100.0)))) * last(as.numeric(sell.these$price)))
     return(revenue)
   } else {
     stop('Must either "buy" or "sell"')

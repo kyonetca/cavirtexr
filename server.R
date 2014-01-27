@@ -30,8 +30,14 @@ shinyServer(function(input, output, session) {
   freqInput <- reactive({
     switch(input$ohlc.frequency,
            "minutes"=vtx.minutes,
+           "3-minutes"=vtx.minutes.3,
+           "5-minutes"=vtx.minutes.5,
+           "10-minutes"=vtx.minutes.10,
+           "15-minutes"=vtx.minutes.15,
+           "30-minutes"=vtx.minutes.30,
            "hours" = vtx.hours,
            "days" = vtx.days,
+           "weeks"=vtx.weeks,
            "months" = vtx.months)
   })
   
@@ -136,12 +142,12 @@ shinyServer(function(input, output, session) {
   }, options=list(bFilter=0, bSort=0, bProcessing=0, bPaginate=0, bInfo=0))
   
   output$market.order.buy <- renderPrint({
-    try(cat(market.order(input$btc.qty, 'buy', book), '\n'))
+    try(cat(market.order(input$btc.qty, 'buy', book, input$fee), '\n'))
     invalidateLater(millis=5000, session)
   })
   
   output$market.order.sell<- renderPrint({
-    try(cat(market.order(input$btc.qty, 'sell', book), '\n'))
+    try(cat(market.order(input$btc.qty, 'sell', book, input$fee), '\n'))
     invalidateLater(millis=5000, session)
   })
 })
