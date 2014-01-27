@@ -2,6 +2,7 @@ library(shiny)
 library(bitcoinchartsr)
 library(lubridate)
 library(quantmod)
+library(stringr)
 source('nws_api.R')
 source('cavirtex-order-book.R')
 
@@ -14,8 +15,14 @@ shinyServer(function(input, output, session) {
   book <- NA
   
   vtx.minutes <- NA
+  vtx.minutes.3 <- NA
+  vtx.minutes.5 <- NA
+  vtx.minutes.10 <- NA
+  vtx.minutes.15 <- NA
+  vtx.minutes.30 <- NA
   vtx.hours <- NA
   vtx.days <- NA
+  vtx.weeks <- NA
   vtx.months  <- NA 
   vtx.hours <- NA
   
@@ -34,24 +41,43 @@ shinyServer(function(input, output, session) {
   
   make.chart <- function(symbol) {
     if(input$ohlc.frequency == "minutes") data <- vtx.minutes
+    if(input$ohlc.frequency == "3-minutes") data <- vtx.minutes.3
+    if(input$ohlc.frequency == "5-minutes") data <- vtx.minutes.5
+    if(input$ohlc.frequency == "10-minutes") data <- vtx.minutes.10
+    if(input$ohlc.frequency == "15-minutes") data <- vtx.minutes.15
+    if(input$ohlc.frequency == "30-minutes") data <- vtx.minutes.30
     if(input$ohlc.frequency == "hours") data <- vtx.hours
     if(input$ohlc.frequency == "days") data <- vtx.days
+    if(input$ohlc.frequency == "weeks") data <- vtx.weeks
     if(input$ohlc.frequency == "months") data <- vtx.months
+    if(str_detect(input$ohlc.frequency, 'minutes')) freq <- 'minutes' else freq <- input$ohlc.frequency
     chartSeries(data, theme='white',
                 name = 'virtexCAD',
                 type = input$chart_type,
-                subset = paste("last", input$timeline.slider, input$ohlc.frequency))
+                subset = paste("last", input$timeline.slider, freq))
   }
   
   output$chart <- renderPlot({
     vtx.minutes <- nws.get('ohlc.bitcoincharts', NWS.HOST, NWS.PORT)
     colnames(vtx.minutes) <- str_join('.', colnames(vtx.minutes))
+    vtx.minutes.3 <- to.minutes3(vtx.minutes, name=rep('', 5))
+    vtx.minutes.5 <- to.minutes5(vtx.minutes, name=rep('', 5))
+    vtx.minutes.10 <- to.minutes10(vtx.minutes, name=rep('', 5))
+    vtx.minutes.15 <- to.minutes15(vtx.minutes, name=rep('', 5))
+    vtx.minutes.30 <- to.minutes30(vtx.minutes, name=rep('', 5))
     vtx.hours <- to.hourly(vtx.minutes, name=rep('', 5))
     vtx.days <- to.daily(vtx.hours, name=rep('', 5))
+    vtx.weeks <- to.weekly(vtx.minutes, name=rep('', 5))
     vtx.months  <- to.monthly(vtx.hours, name=rep('', 5))
     vtx.minutes <<- vtx.minutes
+    vtx.minutes.3 <<- vtx.minutes.3
+    vtx.minutes.5 <<- vtx.minutes.5
+    vtx.minutes.10 <<- vtx.minutes.10
+    vtx.minutes.15 <<- vtx.minutes.15
+    vtx.minutes.30 <<- vtx.minutes.30
     vtx.hours <<- vtx.hours
     vtx.days <<- vtx.days
+    vtx.weeks <<- vtx.weeks
     vtx.months <<- vtx.months
     make.chart()
     invalidateLater(millis=((((60 - minute(Sys.time())) + 1) * 60) * 1000), session)
@@ -82,8 +108,14 @@ shinyServer(function(input, output, session) {
   output$ohlcTable <- renderDataTable(searchDelay=500, expr={
     invalidateLater(millis=5000, session)
     if(input$ohlc.frequency == "minutes") data <- vtx.minutes
+    if(input$ohlc.frequency == "3-minutes") data <- vtx.minutes.3
+    if(input$ohlc.frequency == "5-minutes") data <- vtx.minutes.5
+    if(input$ohlc.frequency == "10-minutes") data <- vtx.minutes.10
+    if(input$ohlc.frequency == "15-minutes") data <- vtx.minutes.15
+    if(input$ohlc.frequency == "30-minutes") data <- vtx.minutes.30
     if(input$ohlc.frequency == "hours") data <- vtx.hours
     if(input$ohlc.frequency == "days") data <- vtx.days
+    if(input$ohlc.frequency == "weeks") data <- vtx.weeks
     if(input$ohlc.frequency == "months") data <- vtx.months
     res <- as.data.frame(data)
     res <- cbind(rownames(res), res)

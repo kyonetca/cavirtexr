@@ -21,7 +21,7 @@ shinyUI(basicPage(
                           plotOutput('chart')
              ), 
              gridsterItem(row=7, col=1, sizex=1, sizey=1, # chart controls 1
-                          selectInput("ohlc.frequency", "OHLCV Frequency:", choices = c("minutes", "hours", "days", "months"))
+                          selectInput("ohlc.frequency", "OHLCV Frequency:", choices = c("minutes", "3-minutes", "5-minutes", "10-minutes", "15-minutes", "30-minutes", "hours", "days", "weeks", "months"))
              ), 
              gridsterItem(row=7, col=2, sizex=1, sizey=1, # chart controls 2
                           selectInput(inputId = "chart_type", label = "Chart Type:", choices = c("Candlestick" = "candlesticks", "Matchstick" = "matchsticks", "Bar" = "bars", "Line" = "line"))
