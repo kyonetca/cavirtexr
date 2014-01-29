@@ -6,11 +6,12 @@ cavirtexr
 Dependencies
 ============
 
-This app depends on the bitcoinchartsr package. Before attempting to run the shiny web app, you will need to install it! To install the bitcoinchartsr package run the following commands in R:
+This app depends on the bitcoinchartsr package. Before attempting to run the shiny web app, you will need to install it! To install the bitcoinchartsr and shiny-gridster packages run the following commands in R:
 
 ```
 library(devtools)
 install_github('https://github.com/br00t999/bitcoinchartsr.git')
+install_git('https://github.com/wch/shiny-gridster.git')
 ```
 
 Launching the web app
@@ -26,9 +27,4 @@ runApp('webapp', launch.browser=TRUE)
 All feedback and suggestions are welcome! 
 
 info@taypeinternational.com
-
-
-
-
-
 
