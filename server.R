@@ -104,9 +104,10 @@ shinyServer(function(input, output, session) {
   })
   
   output$orderbookTable <- renderDataTable(searchDelay=500, expr={
-    res <- cbind(book$bids[1:5,-1], book$asks[1:5,-1])
+    res <- cbind(book$bids[ order(book$bids$price, decreasing=TRUE), ][1:5,-1], book$asks[ order(book$asks$price), ][1:5,-1])
     res <- res[ , c(1:3,6:4) ]
     colnames(res) <- c('bids.amount', 'bids.price',	'bids.value',	'asks.value',	'asks.price', 'asks.amount')
+    
     res
   }, options=list(bFilter=0, bSort=0, bProcessing=0, bPaginate=0, bInfo=0))
 
