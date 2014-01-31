@@ -7,7 +7,7 @@ source('nws_api.R')
 source('cavirtex-order-book.R')
 
 NWS.HOST <- 'localhost'
-NWS.PORT <- 9090
+NWS.PORT <- 8765
 
 # Define server logic required to summarize and view the selected dataset
 shinyServer(function(input, output, session) {
@@ -104,15 +104,16 @@ shinyServer(function(input, output, session) {
   })
   
   output$orderbookTable <- renderDataTable(searchDelay=500, expr={
-    res <- cbind(book$bids[1:5,-1], book$asks[1:5,-1])
-    res <- res[ , c(1:3,6:4) ]
-    colnames(res) <- c('bids.amount', 'bids.price',	'bids.value',	'asks.value',	'asks.price', 'asks.amount')
+    res <- cbind(book$bids[1:5,c(2,1)], book$asks[1:5,])
+    res <- cbind((res[,1] * res[,2]), res, (res[,3] * res[,4]))
+    colnames(res) <- c('bids.value', 'bids.amount',  'bids.price',	'asks.price',	'asks.amount', 'asks.value')
     res
   }, options=list(bFilter=0, bSort=0, bProcessing=0, bPaginate=0, bInfo=0))
 
   output$recentTradesTable <- renderDataTable(searchDelay=500, expr={
     invalidateLater(millis=5000, session)
-    res <- cbind(as.character(book$recent.trades$processed[1:10]), book$recent.trades[1:10, c(2, 4)])
+    recent.trades <- nws.get('ticks.cavirtex', NWS.HOST, NWS.PORT)
+    res <- tail(recent.trades,10)[,c(1,4,3)]
     colnames(res) <- c('Time', 'BTC', 'Price')
     rownames(res) <- NULL
     as.matrix(res[ order(as.POSIXct(res[,1]), decreasing=TRUE), ])

@@ -3,13 +3,14 @@ library(stringr)
 # ==========================================================================================
 # Calculate the cost to execute a market order
 # ==========================================================================================
-market.order <- function(qty, buy.sell='buy', order.book=cavirtex.get.orderbook(), fee=0.0) {
+market.order <- function(qty, buy.sell='buy', order.book=nws.get('book', NWS.HOST, NWS.PORT), fee=0.0) {
   if(buy.sell == 'buy') {
     # how much will it cost to purchase qty of BTC by market order
     # when you buy fee is charged in CAD
     order.book$asks$amount.cum <- cumsum(order.book$asks$amount)  
+    rownames(order.book$asks) <- NULL 
     buy.these <- order.book$asks[ 1:rownames(first(order.book$asks[ order.book$asks$amount.cum >= qty, ])), ]
-    cost <- sum(as.numeric(buy.these$value)) - ((last(buy.these$amount.cum) - qty) * last(as.numeric(buy.these$price)))
+    cost <- sum(as.numeric(buy.these$price * buy.these$amount)) - ((last(buy.these$amount.cum) - qty) * last(as.numeric(buy.these$price)))
     # to compensate for fees, we add on fee to cost
     cost <- cost * (1 + (fee / 100.0))
     return(cost)
@@ -17,9 +18,10 @@ market.order <- function(qty, buy.sell='buy', order.book=cavirtex.get.orderbook(
     # how much will you receive to sell qty of BTC by market order
     # when you sell fee is charged in BTC
     order.book$bids$amount.cum <- cumsum(order.book$bids$amount)  
+    rownames(order.book$bids) <- NULL
     sell.these <- order.book$bids[ 1:rownames(first(order.book$bids[ order.book$bids$amount.cum >= (qty * (1 - (fee / 100.0))), ])), ]
     # we adjust the qty by the BTC fee
-    revenue <- sum(as.numeric(sell.these$value)) - ((last(sell.these$amount.cum) - (qty * (1 - (fee / 100.0)))) * last(as.numeric(sell.these$price)))
+    revenue <- sum(as.numeric(sell.these$price * sell.these$amount)) - ((last(sell.these$amount.cum) - (qty * (1 - (fee / 100.0)))) * last(as.numeric(sell.these$price)))
     return(revenue)
   } else {
     stop('Must either "buy" or "sell"')
@@ -39,38 +41,19 @@ market.order <- function(qty, buy.sell='buy', order.book=cavirtex.get.orderbook(
 # }
 
 # ==========================================================================================
-# Generic print method for orderbook class ( used in Shiny app )
-# ==========================================================================================
-print.orderbook <- function(x, ...) {
-  book <- cbind(x$bids[ ,2:4 ], rep('|', 20), x$asks[ order(as.numeric(x$asks$price), decreasing=FALSE),4:2])
-  colnames(book) <- c('bids.amount', 'bids.price', 'bids.value', '', 'asks.amount', 'asks.price', 'asks.value')
-  print(book)
-}
-
-# ==========================================================================================
 # Generic plot method for orderbook class ( used in Shiny app )
 # ==========================================================================================
-plot.orderbook <- function(x, y, ...) {
+plot.orderbookjson <- function(x, y, ...) {
   par(mfcol=c(1,2), bg='#FFFFFF', col.axis='#000000', cex.axis=0.75, col.main='#000000', las=2, oma=c(0,0,0,1))
-  max.y <- ifelse(max(as.numeric(x$bids$amount)) > max(as.numeric(x$asks$amount)), yes=max(as.numeric(x$bids$amount)), no=max(as.numeric(x$asks$amount)))
-  plot(y=x$bids$amount, x=x$bids$price, type='h', lwd=12, yaxt='n', ann=FALSE, xlim=c(min(as.numeric(x$bids$price)), max(as.numeric(x$bids$price))), ylim=c(0, max.y), axes=FALSE, col='#00CC00', lend='square', )
-  axis(side=1, at=seq(min(as.numeric(x$bids$price)), max(as.numeric(x$bids$price)), ((max(as.numeric(x$bids$price)) - min(as.numeric(x$bids$price))) / 5)), col='black')
+  max.y <- ifelse(max(as.numeric(x$bids$amount[1:20])) > max(as.numeric(x$asks$amount[1:20])), yes=max(as.numeric(x$bids$amount[1:20])), no=max(as.numeric(x$asks$amount[1:20])))
+  plot(y=x$bids$amount[1:20], x=x$bids$price[1:20], type='h', lwd=12, yaxt='n', ann=FALSE, xlim=c(min(as.numeric(x$bids$price[1:20])), max(as.numeric(x$bids$price[1:20]))), ylim=c(0, max.y), axes=FALSE, col='#00CC00', lend='square', )
+  axis(side=1, at=seq(min(as.numeric(x$bids$price[1:20])), max(as.numeric(x$bids$price[1:20])), ((max(as.numeric(x$bids$price[1:20])) - min(as.numeric(x$bids$price[1:20]))) / 5)), col='black')
   axis(side=2, at=seq(0, max.y, (max.y / 10)), col='black')
   grid(NA,NULL, lty = 6, col = "grey")
   title('Bids')
-  plot(y=x$asks$amount, x=x$asks$price, type='h', lwd=12, yaxt='n', ann=FALSE, xlim=c(min(as.numeric(x$asks$price)), max(as.numeric(x$asks$price))), ylim=c(0, max.y), axes=FALSE, col='#FF7700', lend='square')
-  axis(side=1, at=seq(min(as.numeric(x$asks$price)), max(as.numeric(x$asks$price)), ((max(as.numeric(x$asks$price)) - min(as.numeric(x$asks$price))) / 5)), col='black')
+  plot(y=x$asks$amount[1:20], x=x$asks$price[1:20], type='h', lwd=12, yaxt='n', ann=FALSE, xlim=c(min(as.numeric(x$asks$price[1:20])), max(as.numeric(x$asks$price[1:20]))), ylim=c(0, max.y), axes=FALSE, col='#FF7700', lend='square')
+  axis(side=1, at=seq(min(as.numeric(x$asks$price[1:20])), max(as.numeric(x$asks$price[1:20])), ((max(as.numeric(x$asks$price[1:20])) - min(as.numeric(x$asks$price[1:20]))) / 5)), col='black')
   axis(side=4, at=seq(0, max.y, (max.y / 10)), col='black')
   grid(NA,NULL, lty = 6, col = "grey")
   title('Asks')
-}
-
-# ==========================================================================================
-# Generic summary method for orderbook class ( used in Shiny app )
-# ==========================================================================================
-summary.orderbook <- function(object, ...) {
-  print(paste('Best bid: $', paste(object$bids[ as.numeric(object$bids$price) == max(as.numeric(object$bids$price)), 'price'], sep=',', collapse=' ')))
-  print(paste('Best ask: $', paste(object$asks[ as.numeric(object$asks$price) == min(as.numeric(object$asks$price)), 'price'], sep=',', collapse=' ')))
-  spread <- abs(as.numeric(object$asks[1,3]) - as.numeric(object$bids[1,3]))
-  print(paste('Bid / Ask spread: $', spread[1]))
 }
